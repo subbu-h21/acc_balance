@@ -29,8 +29,9 @@ def process_receivements(ac_path, books_path, timestamp):
     ob_eng = 'openpyxl' if books_path.endswith('.xlsx') else 'xlrd'
     # load account statement
     ac = (pd.read_excel(ac_path, header=None, engine=ac_eng)
-            .drop(index=range(14)).dropna(axis=1, how='all').reset_index(drop=True))
-    ac.columns = ac.iloc[0]; ac = ac[1:].reset_index(drop=True).drop('Cheque No', axis=1)
+            .dropna(axis=1, how='all').reset_index(drop=True))
+    ac.columns = ac.iloc[0]; ac = ac[1:].reset_index(drop=True).drop(['Chq No','Init. Br'], axis=1)
+    ac = ac.pipe(lambda df: df[~df['Particulars'].str.contains('Opening balance|Closing balance', case=False, na=False)]).reset_index(drop=True)
     ac.columns = ['Date','Particular','Given','Received','Balance']
     # load our books
     ob = (pd.read_excel(books_path, header=None, engine=ob_eng)
