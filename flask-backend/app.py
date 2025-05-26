@@ -158,7 +158,7 @@ def process_summary(ac_path, books_path):
     )
     ob['Balance'] = (
         ob['Balance']
-        .str.replace('Cr', '', regex=False)
+        .str.replace('Dr', '', regex=False)
         .str.replace(',', '', regex=False)
         .str.replace(r'\s+', '', regex=True)
     )
