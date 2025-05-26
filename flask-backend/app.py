@@ -82,9 +82,12 @@ def process_receivements(ac_path, books_path, timestamp):
 def process_payments(ac_path, books_path, timestamp):
     ac_eng = 'openpyxl' if ac_path.endswith('.xlsx') else 'xlrd'
     ob_eng = 'openpyxl' if books_path.endswith('.xlsx') else 'xlrd'
-    ac = (pd.read_excel(ac_path, header=None, engine=ac_eng).drop(index=range(14)).dropna(axis=1, how='all').reset_index(drop=True))
-    ac.columns = ac.iloc[0]; ac = ac[1:].reset_index(drop=True).drop('Cheque No', axis=1)
+    ac = (pd.read_excel(ac_path, header=None, engine=ac_eng)
+            .dropna(axis=1, how='all').reset_index(drop=True))
+    ac.columns = ac.iloc[0]; ac = ac[1:].reset_index(drop=True).drop(['Chq No','Init. Br'], axis=1)
+    ac = ac.pipe(lambda df: df[~df['Particulars'].str.contains('Opening balance|Closing balance', case=False, na=False)]).reset_index(drop=True)
     ac.columns = ['Date','Particular','Given','Received','Balance']
+
     ob = (pd.read_excel(books_path, header=None, engine=ob_eng).dropna(axis=1, how='all')
             .pipe(lambda df: df.rename(columns=df.iloc[0])).drop(index=0)
             .pipe(lambda df: df[~df['Particular'].str.contains('Opening balance|Closing balance', case=False, na=False)]).reset_index(drop=True))
@@ -123,14 +126,13 @@ def process_summary(ac_path, books_path):
     ob_eng = 'openpyxl' if books_path.endswith('.xlsx') else 'xlrd'
 
     # Load and normalize account statement
-    ac = (pd.read_excel(ac_path, header=None, engine=ac_eng)
-            .drop(index=range(14))
-            .dropna(axis=1, how='all')
-            .reset_index(drop=True))
-    ac.columns = ac.iloc[0]
-    ac = ac[1:].reset_index(drop=True).drop('Cheque No', axis=1)
+    ac = (pd.read_excel(ac_path, header=None, engine=ac_eng).dropna(axis=1, how='all').reset_index(drop=True))
+    ac.columns = ac.iloc[0]; ac = ac[1:].reset_index(drop=True).drop(['Chq No','Init. Br'], axis=1)
+    ac = ac.pipe(lambda df: df[~df['Particulars'].str.contains('Opening balance|Closing balance', case=False, na=False)]).reset_index(drop=True)
     ac.columns = ['Date','Particular','Given','Received','Balance']
+    ac = ac.astype(str)
     ac['Date'] = pd.to_datetime(ac['Date'], errors='coerce', dayfirst=True)
+
 
     # Load and normalize our books
     ob = (pd.read_excel(books_path, header=None, engine=ob_eng)
@@ -138,6 +140,7 @@ def process_summary(ac_path, books_path):
             .pipe(lambda df: df.rename(columns=df.iloc[0])).drop(index=0)
             .pipe(lambda df: df[~df['Particular'].str.contains('Opening balance|Closing balance', case=False, na=False)])
             .reset_index(drop=True))
+    ob = ob.astype(str)
     ob['Date'] = pd.to_datetime(ob['Date'], errors='coerce', dayfirst=True)
 
     # Clean numeric columns
