@@ -95,7 +95,8 @@ def process_payments(ac_path, books_path, timestamp):
     pay_ob['Particular'] = pay_ob['Particular'].str.strip()
     def name_clean(desc): return re.sub(r"(NEFT-|MClick/To\s+)", "", str(desc)).strip()
     def sup_name(txn): parts=str(txn).split('/'); return parts[0].strip() if len(parts)>1 else str(txn)
-    pay_ac['Particular']=pay_ac['Particular'].apply(name_clean); pay_ac['SupplierName']=pay_ac['Particular'].apply(sup_name)
+    # pay_ac['Particular']=pay_ac['Particular'].apply(name_clean); pay_ac['SupplierName']=pay_ac['Particular'].apply(sup_name)
+    pay_ac['SupplierName']= pay_ac['Particular']
     pay_ac['Date']=pd.to_datetime(pay_ac['Date'],errors='coerce',dayfirst=True).dt.date
     pay_ob['Date']=pd.to_datetime(pay_ob['Date'],errors='coerce',dayfirst=True).dt.date
     discs=[]
