@@ -6,8 +6,6 @@ An automated account reconciliation system that analyzes transactional data, det
 
 - Python
 - Flask
-- Docker
-- Python
 - Dockerfile
 - HTML
 
